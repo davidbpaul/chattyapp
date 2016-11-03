@@ -19,6 +19,12 @@ nav h1 {
   margin: 0;
   font-size: 250%;
 }
+nav .userCount{
+  float:right;
+  margin:0;
+  line-height: 0
+
+}
 #message-list {
   height: calc(100vh - 131px);
   padding: 16px 8px;
@@ -61,6 +67,3 @@ footer #username {
 footer #new-message {
   flex: 7;
 }
-
-
-

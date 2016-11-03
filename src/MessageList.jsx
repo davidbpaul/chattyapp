@@ -2,15 +2,15 @@
  import Message from './Message.jsx';
 
 class MessageList extends Component {
+
+  renderMessages(messages) {
+    return messages.map((message, index) => <Message i={ message } key={ message.id } />)
+  }
+
   render() {
     return (
       <div id="message-list">
-        {this.props.messages.map(function(message){
-
-          return (
-            <Message i={message} key = {message.id} />
-          )
-        })}
+        { this.renderMessages(this.props.messages) }
       </div>
     );
   }
