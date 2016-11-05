@@ -11,7 +11,8 @@ class App extends Component {
       currentUser: {name: ""},
       typingMessage: "",
       messages: [],
-      userCount: 0
+      userCount: 0,
+      color: ''
     };
   }
 
@@ -21,11 +22,10 @@ class App extends Component {
     this.socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       switch (message.type) {
-        // case 'userColor':
-        // this.setState({
-        //   color: newState.currentUser.color.concat(message.color)
-        // })
-        //   break;
+        case 'colorAssigned':
+        console.log('color ', message.color)
+          this.setState({color: message.color})
+          break;
         case 'incomingMessage':
           this.setState({
             messages:   this.state.messages.concat(message)
@@ -56,18 +56,25 @@ class App extends Component {
     // Guard statement!
     if (e.key === 'Enter') {
       let typedMsg  = e.target.value;
+      if (this.state.currentUser.name.trim() === "" || this.state.currentUser.name.trim() === null ){
+        this.state.currentUser.name = "Anonymous"
+      }
       let msg = {
         type: 'postMessage',
         name: this.state.currentUser.name,
-        //color: this.state.currentUser.color,
-        messages: typedMsg
+        messages: typedMsg,
+        color: this.state.color
       }
+      console.log("fried ",this.state.color)
       this.socket.send(JSON.stringify(msg));
+      e.target.value = '';
+
     }
   }
   handleUser = (e) => {
     if (e.key === 'Enter') {
-      //console.log("old ", this.state.currentUser.name)
+      console.log("old ", this.state.currentUser.name)
+
       let oldUser = this.state.currentUser.name || 'Anonymous';
       let newUser = e.target.value;
       //console.log(`newUser: ${newUser}`);
@@ -81,6 +88,7 @@ class App extends Component {
             messages: `${oldUser } changed their name to ${newUser}`
         }
           this.socket.send(JSON.stringify(msg));
+
       }
     }
 
@@ -88,10 +96,13 @@ class App extends Component {
         return (
           <div>
             <nav>
-              <h1>Chatty</h1>
               <span className='userCount'>{this.state.userCount} users online</span>
+              <h1>Chatty</h1>
             </nav>
-            <MessageList messages={this.state.messages} />
+            <MessageList
+            messages={this.state.messages}
+            color={this.state.color}
+            />
             <ChatBar
               currentUser={this.state.currentUser}
               handleUser={this.handleUser}

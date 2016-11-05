@@ -11,7 +11,7 @@ class Message extends Component {
     } else {
         return (
           <div className="message">
-            <span className="username"><b>{ this.props.i.name }</b></span>
+            <span className="username" style={{color: this.props.i.color}}><b>{ this.props.i.name  }</b></span>
             <span className="content">{ this.props.i.messages }</span>
           </div>
        );

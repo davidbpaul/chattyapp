@@ -22,28 +22,26 @@ wss.broadcast = function broadcast(data) {
   });
 };
 
-// function getRandomIntInclusive(min, max) {
-//   min = Math.ceil(min);
-//   max = Math.floor(max);
-//   return Math.floor(Math.random() * (max - min + 1)) + min;
-// }
-
+const colors = ['red', 'blue', 'green', 'purple', 'black', 'grey', 'orange']
+function getRandomIntInclusive(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 // Set up a callback that will run when a client connects to the server
 // When a client connects they are assigned a socket, represented by
 // the ws parameter in the callback.
 var userCount = 0;
-// var colors = ['#4ECDC4', '#C7F464', '#FF6B6B', '#556270'];
 
 wss.on('connection', (ws) => {
   userCount++;
   wss.broadcast(JSON.stringify({ type: 'userCount', content: userCount }));
 
-  // colorMsg = {
-  //   type: 'userColor',
-  //   color: colors[getRandomIntInclusive(0, colors.length - 1)]
-  // }
-  // ws.send(JSON.stringify(colorMsg));
-
+  const randomColor = colors[getRandomIntInclusive(0, colors.length - 1)];
+  const colorAssigned = {
+    type: 'colorAssigned',
+    color: randomColor
+  }
+  console.log(randomColor)
+  ws.send(JSON.stringify(colorAssigned));
   ws.on('message', (message) => {
     var nMessage = JSON.parse(message);
     nMessage.uuid = uuid.v1();
