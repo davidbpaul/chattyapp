@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
 import ChatBar from './ChatBar.jsx';
 import MessageList from './MessageList.jsx';
-import Message from './Message.jsx'
+
 
 class App extends Component {
-  static counter = 2
+  //static counter = 2
   constructor(props) {
     super(props);
     this.state = {
@@ -14,97 +14,91 @@ class App extends Component {
       userCount: 0
     };
   }
-  //get typed msg
-  handleMsg = (message) => {
-    //sending message
-    console.log(message)
-    this.setState({ messages: [...this.state.messages, this.addID(message)] })
-    this.socket.send(JSON.stringify(message));
-  }
-  // get notification
-  handleNotifications = (notification, user, oldUser) => {
-    this.setState({ messages: [...this.state.messages, this.addNod(notification, user, oldUser)] })
-    //sending message
-    this.socket.send(JSON.stringify(notification));
-  }
-  addID(obj) {
-    obj.id = (App.counter+= 1)
-    obj.type = 'postMessage'
-    return obj
-  }
-  addNod(obj, user, oldUser) {
-    obj.type = 'postNotification'
-    obj.username = ""
-    obj.content = `${oldUser} has changed there name to ${user}`
-    return obj
-  }
 
-componentDidMount (){
-  console.log("componentDidMount <App />");
-  //connecting to server
-  this.socket = new WebSocket("ws://0.0.0.0:5000");
-  //recieving message
-  this.socket.onmessage = (ev) => {
-    const message = JSON.parse(ev.data);
-
-    switch (message.type) {
-      case 'incomingMessage':
-        //push message to messages (display on user screen)
-        this.setState({
-          messages: this.state.messages.concat(message),
-        });
-        break;
-      case 'incomingNotification':
-          message.type = 'message system';
+  componentDidMount () {
+    // console.log("componentDidMount <App />");
+    this.socket = new WebSocket("ws://0.0.0.0:5000");
+    this.socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      switch (message.type) {
+        // case 'userColor':
+        // this.setState({
+        //   color: newState.currentUser.color.concat(message.color)
+        // })
+        //   break;
+        case 'incomingMessage':
           this.setState({
-            notification: this.state.messages.concat(message),
-          });
-          break;
-      case 'userCount':
-        console.log(message)
-        this.setState({
-        userCount: this.state.messages.concat(message.content),
-        })
-         break;
-      default:
-        console.log('Unknown message type: ', message.type);
+            messages:   this.state.messages.concat(message)
+          })
         break;
+        case 'incomingNotification':
+          message.type = 'message system';
+          // this.setState({
+          //  notification:   this.state.messages.concat(message)
+          // })
+          this.setState({
+            messages:   this.state.messages.concat(message)
+          })
+          break;
+        case 'userCount':
+          this.setState({
+            userCount:   this.state.messages.concat(message.content)
+          })
+          break;
+        default:
+          console.log('Unknown message type: ', message.type);
+          break;
+      }
     }
   }
-  // setTimeout(() => {
-  //   console.log("Simulating incoming message");
-  //   // Add a new message to the list of messages in the data store
-  //   const newMessage = {id: 3, username: "Michelle", content: "Hello there!"};
-  //   const messages = this.state.messages.concat(newMessage)
-  //   console.log(messages)
-  //   // Update the state of the app component.
-  //   // Calling setState will trigger a call to render() in App and all child components.
-  // //  this.setState({messages: messages})
-  // }, 3000);
-}
 
-//under construction
-showLivingTyping = ({ message, username }) => {
-  this.setState({ typingMessage: message })
-}
-
-
-  render() {
-    return (
-      <div className="wrapper">
-        <nav>
-          <h1>Chatty</h1>
-          <span className='userCount'>{this.state.userCount} users online</span>
-        </nav>
-        <MessageList
-          messages={this.state.messages} />
-
-        <ChatBar
-          handleNotifications={this.handleNotifications}
-          handleMsg={ this.handleMsg }
-          onTyping={ this.showLivingTyping } />
-      </div>
-    );
+  handleMsg = (e) => {
+    // Guard statement!
+    if (e.key === 'Enter') {
+      let typedMsg  = e.target.value;
+      let msg = {
+        type: 'postMessage',
+        name: this.state.currentUser.name,
+        //color: this.state.currentUser.color,
+        messages: typedMsg
+      }
+      this.socket.send(JSON.stringify(msg));
+    }
   }
-}
-export default App;
+  handleUser = (e) => {
+    if (e.key === 'Enter') {
+      //console.log("old ", this.state.currentUser.name)
+      let oldUser = this.state.currentUser.name || 'Anonymous';
+      let newUser = e.target.value;
+      //console.log(`newUser: ${newUser}`);
+      // Update username before sending notification
+      //console.log(this.state);
+      this.setState({currentUser: {name: newUser}});
+      //console.log(this.state);
+      let msg = {
+            type: 'postNotification',
+            username: newUser,
+            messages: `${oldUser } changed their name to ${newUser}`
+        }
+          this.socket.send(JSON.stringify(msg));
+      }
+    }
+
+      render() {
+        return (
+          <div>
+            <nav>
+              <h1>Chatty</h1>
+              <span className='userCount'>{this.state.userCount} users online</span>
+            </nav>
+            <MessageList messages={this.state.messages} />
+            <ChatBar
+              currentUser={this.state.currentUser}
+              handleUser={this.handleUser}
+              handleMsg={this.handleMsg}
+            />
+          </div>
+        );
+      }
+    }
+    export default App;
